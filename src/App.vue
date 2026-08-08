@@ -4,6 +4,7 @@ import { RouterView } from 'vue-router'
 import { useChecklistStore } from './stores/checklistStore'
 import AppHeader from './components/AppHeader.vue'
 import BottomNav from './components/BottomNav.vue'
+import AppFooter from './components/AppFooter.vue'
 
 var store = useChecklistStore()
 
@@ -18,6 +19,7 @@ onMounted(() => {
     <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-4">
       <RouterView />
     </main>
+    <AppFooter />
     <BottomNav class="sm:hidden" />
   </div>
 </template>
