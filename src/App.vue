@@ -5,6 +5,7 @@ import { useChecklistStore } from './stores/checklistStore'
 import AppHeader from './components/AppHeader.vue'
 import BottomNav from './components/BottomNav.vue'
 import AppFooter from './components/AppFooter.vue'
+import UpdatePrompt from './components/UpdatePrompt.vue'
 
 var store = useChecklistStore()
 
@@ -21,5 +22,6 @@ onMounted(() => {
     </main>
     <AppFooter />
     <BottomNav class="sm:hidden" />
+    <UpdatePrompt />
   </div>
 </template>
