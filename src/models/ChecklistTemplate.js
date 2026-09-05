@@ -3,15 +3,33 @@ import { ChecklistCategory } from './ChecklistCategory'
 /**
  * Root aggregate: a full checklist made of multiple categories.
  * Behaves as the Aggregate Root for persistence boundaries.
+ *
+ * `version` + `sourceDefinitionId` track which default definition (if any)
+ * this template originated from, and which version of it was last merged —
+ * required by DefaultsReconciler to safely add new default content without
+ * touching user progress or custom items. Both must round-trip through
+ * toJSON/fromJSON or they reset to their defaults on every reload.
  */
 export class ChecklistTemplate {
-  constructor({ id, title, description = '', icon = '🗒️', categories = [], isCustom = false, createdAt = Date.now() }) {
+  constructor({
+    id,
+    title,
+    description = '',
+    icon = '🗒️',
+    categories = [],
+    isCustom = false,
+    createdAt = Date.now(),
+    version = 1,
+    sourceDefinitionId = null
+  }) {
     this.id = id
     this.title = title
     this.description = description
     this.icon = icon
     this.isCustom = isCustom
     this.createdAt = createdAt
+    this.version = version
+    this.sourceDefinitionId = sourceDefinitionId
     this.categories = categories.map((cat) => (cat instanceof ChecklistCategory ? cat : new ChecklistCategory(cat)))
   }
 
@@ -44,6 +62,8 @@ export class ChecklistTemplate {
       icon: this.icon,
       isCustom: this.isCustom,
       createdAt: this.createdAt,
+      version: this.version,
+      sourceDefinitionId: this.sourceDefinitionId,
       categories: this.categories.map((cat) => cat.toJSON())
     }
   }

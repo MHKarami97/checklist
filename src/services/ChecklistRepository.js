@@ -2,6 +2,7 @@ import { ChecklistTemplate } from '../models/ChecklistTemplate'
 import { storageService } from './StorageService'
 
 const STORAGE_KEY = 'checklists'
+const DELETED_DEFAULTS_KEY = 'deleted-default-ids'
 
 /**
  * Repository Pattern implementation for ChecklistTemplate aggregates.
@@ -45,6 +46,19 @@ export class ChecklistRepository {
 
   exists() {
     return this.storage.get(STORAGE_KEY, null) !== null
+  }
+
+  /**
+   * Ids of default-sourced templates the user explicitly deleted, so
+   * DefaultsReconciler.reconcileAll() does not silently resurrect them
+   * on the next app start.
+   */
+  getDeletedDefaultIds() {
+    return this.storage.get(DELETED_DEFAULTS_KEY, [])
+  }
+
+  saveDeletedDefaultIds(ids) {
+    return this.storage.set(DELETED_DEFAULTS_KEY, ids)
   }
 }
 
