@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { checklistRepository } from '../services/ChecklistRepository'
 import { ChecklistFactory } from '../services/ChecklistFactory'
+import { DefaultsReconciler } from '../services/DefaultsReconciler'
 import { defaultChecklistDefinitions } from '../data/defaultChecklists'
 import { applyItemStrategy } from '../services/ItemFilterStrategies'
 
@@ -18,7 +19,8 @@ export var useChecklistStore = defineStore('checklist', {
     sortKey: 'default',
     searchQuery: '',
     isDarkMode: false,
-    saveTimeoutId: null
+    saveTimeoutId: null,
+    deletedDefaultIds: []
   }),
 
   getters: {
@@ -48,10 +50,13 @@ export var useChecklistStore = defineStore('checklist', {
     initialize() {
       if (checklistRepository.exists()) {
         this.templates = checklistRepository.getAll()
+        this.deletedDefaultIds = checklistRepository.getDeletedDefaultIds()
+        this.reconcileDefaults()
       } else {
         this.templates = defaultChecklistDefinitions.map((def) => ChecklistFactory.createFromDefinition(def))
         this.persistAll()
       }
+
       if (this.templates.length && !this.activeTemplateId) {
         this.activeTemplateId = this.templates[0].id
         this.activeCategoryId = this.templates[0].categories[0]?.id ?? null
@@ -60,6 +65,21 @@ export var useChecklistStore = defineStore('checklist', {
       var darkPref = localStorage.getItem('smart-checklist:theme')
       this.isDarkMode = darkPref === 'dark'
       this.applyTheme()
+    },
+
+    /**
+     * Merges any updated/new entries from `defaultChecklistDefinitions`
+     * into the persisted templates without touching user progress or
+     * user-added items/categories. Safe to call on every app start.
+     */
+    reconcileDefaults() {
+      var outcome = DefaultsReconciler.reconcileAll(
+        this.templates,
+        defaultChecklistDefinitions,
+        this.deletedDefaultIds
+      )
+      this.templates = outcome.templates
+      if (outcome.changed) this.persistAll()
     },
 
     persistAll() {
@@ -131,6 +151,15 @@ export var useChecklistStore = defineStore('checklist', {
     },
 
     deleteTemplate(templateId) {
+      var template = this.templates.find((tpl) => tpl.id === templateId)
+
+      // Remember explicit deletion of a default-sourced template so that
+      // reconcileDefaults() does not silently resurrect it later.
+      if (template?.sourceDefinitionId) {
+        this.deletedDefaultIds.push(template.sourceDefinitionId)
+        checklistRepository.saveDeletedDefaultIds(this.deletedDefaultIds)
+      }
+
       this.templates = this.templates.filter((tpl) => tpl.id !== templateId)
       if (this.activeTemplateId === templateId) {
         this.activeTemplateId = this.templates[0]?.id ?? null
