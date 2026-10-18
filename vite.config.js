@@ -28,8 +28,9 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
-        cleanupOutdatedCaches: true
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,avif,gif,woff,woff2,json,webmanifest}'],
+        navigateFallback: 'index.html',
+        cleanupOutdatedCaches: true,
       }
     })
   ]
