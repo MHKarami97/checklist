@@ -1,0 +1,15 @@
+export var CLOUD_CONFIG = Object.freeze({
+  googleClientId: '627723972815-qrp35936cvbodbo2udkp4qeeh6sgoqms.apps.googleusercontent.com',
+  scope: 'https://www.googleapis.com/auth/drive.appdata',
+  gsiScriptUrl: 'https://accounts.google.com/gsi/client',
+  backupFilePrefix: 'smart-checklist.backup.',
+  keepVersions: 3,
+  autoBackupDebounceMs: 15000,
+  silentRetryCooldownMs: 5 * 60 * 1000,
+  minPassphraseLength: 8,
+  pbkdf2Iterations: 600000,
+  inlineUploadLimitBytes: 4 * 1024 * 1024,
+  stateStorageKey: 'smart-checklist:cloudSync:state',
+  deviceIdStorageKey: 'smart-checklist:cloudSync:deviceId',
+  vaultDatabaseName: 'ChecklistCloudDB',
+})

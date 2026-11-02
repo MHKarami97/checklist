@@ -1,11 +1,15 @@
 <script setup>
 import { ref } from 'vue'
 import { useChecklistStore } from '../stores/checklistStore'
+import { useCloudSyncStore } from '../stores/cloudSyncStore'
 import TemplateCard from '../components/TemplateCard.vue'
+import CloudBackupCard from '../components/cloud/CloudBackupCard.vue'
 
 var store = useChecklistStore()
+var cloudStore = useCloudSyncStore()
 var isCreating = ref(false)
 var newTitle = ref('')
+var showCloudBackup = ref(false)
 
 function createCustom() {
   if (!newTitle.value.trim()) return
@@ -33,7 +37,7 @@ function handleImport(event) {
         <p class="text-sm text-slate-400 mt-1">{{ store.templates.length }} چک‌لیست فعال</p>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
         <button
           type="button"
           class="min-h-[44px] px-4 rounded-xl bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
@@ -43,7 +47,7 @@ function handleImport(event) {
         </button>
         <button
           type="button"
-          class="min-h-[44px] px-4 rounded-xl border border-slate-300 dark:border-slate-600 text-sm"
+          class="min-h-[44px] px-3.5 rounded-xl border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           @click="store.exportData"
         >
           خروجی
@@ -51,12 +55,32 @@ function handleImport(event) {
         <input ref="importInput" type="file" accept="application/json" class="hidden" @change="handleImport" />
         <button
           type="button"
-          class="min-h-[44px] px-4 rounded-xl border border-slate-300 dark:border-slate-600 text-sm"
+          class="min-h-[44px] px-3.5 rounded-xl border border-slate-300 dark:border-slate-600 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           @click="triggerImport($refs.importInput)"
         >
           ورودی
         </button>
+        <button
+          type="button"
+          class="min-h-[44px] px-3.5 rounded-xl border text-sm transition-colors flex items-center gap-1.5"
+          :class="showCloudBackup ? 'bg-brand-50 dark:bg-brand-950/40 border-brand-500 text-brand-600 dark:text-brand-400 font-medium' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'"
+          @click="showCloudBackup = !showCloudBackup"
+          :aria-expanded="showCloudBackup"
+          title="پشتیبان‌گیری ابری Google Drive"
+        >
+          <span>☁️</span>
+          <span>Google Drive</span>
+          <span
+            v-if="cloudStore.isConnected"
+            class="inline-block w-2 h-2 rounded-full bg-emerald-500"
+            title="متصل"
+          />
+        </button>
       </div>
+    </div>
+
+    <div v-show="showCloudBackup" class="transition-all">
+      <CloudBackupCard />
     </div>
 
     <div v-if="isCreating" class="flex items-center gap-2">

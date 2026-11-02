@@ -20,7 +20,9 @@ export class ChecklistRepository {
 
   saveAll(templates) {
     var payload = templates.map((tpl) => tpl.toJSON())
-    return this.storage.set(STORAGE_KEY, payload)
+    var result = this.storage.set(STORAGE_KEY, payload)
+    this._notify()
+    return result
   }
 
   getById(id) {
@@ -58,7 +60,28 @@ export class ChecklistRepository {
   }
 
   saveDeletedDefaultIds(ids) {
-    return this.storage.set(DELETED_DEFAULTS_KEY, ids)
+    var result = this.storage.set(DELETED_DEFAULTS_KEY, ids)
+    this._notify()
+    return result
+  }
+
+  onChange(listener) {
+    if (!this._listeners) this._listeners = []
+    this._listeners.push(listener)
+    return () => {
+      this._listeners = this._listeners.filter((l) => l !== listener)
+    }
+  }
+
+  _notify() {
+    if (!this._listeners) return
+    this._listeners.forEach((l) => {
+      try {
+        l()
+      } catch (err) {
+        console.error('ChecklistRepository listener error', err)
+      }
+    })
   }
 }
 

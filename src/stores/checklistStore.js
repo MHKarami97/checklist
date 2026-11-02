@@ -4,6 +4,7 @@ import { ChecklistFactory } from '../services/ChecklistFactory'
 import { DefaultsReconciler } from '../services/DefaultsReconciler'
 import { defaultChecklistDefinitions } from '../data/defaultChecklists'
 import { applyItemStrategy } from '../services/ItemFilterStrategies'
+import { cloudSyncService } from '../services/cloud'
 
 /**
  * Central reactive store (Observer Pattern via Pinia's reactivity system).
@@ -48,6 +49,11 @@ export var useChecklistStore = defineStore('checklist', {
 
   actions: {
     initialize() {
+      cloudSyncService.setDataRestoredHandler(async () => {
+        this.templates = checklistRepository.getAll()
+        this.deletedDefaultIds = checklistRepository.getDeletedDefaultIds()
+      })
+
       if (checklistRepository.exists()) {
         this.templates = checklistRepository.getAll()
         this.deletedDefaultIds = checklistRepository.getDeletedDefaultIds()
